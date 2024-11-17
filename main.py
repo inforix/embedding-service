@@ -1,13 +1,15 @@
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
-import torch
-from transformers import AutoTokenizer, AutoModel
-import numpy as np
+from dotenv import load_dotenv
+from sentence_transformers import SentenceTransformer
+
+_ = load_dotenv()
 
 # Load the TAO-8K model and tokenizer (make sure the model is available on Hugging Face or local path)
 # Replace 'tao-8k-model-name' with the actual model identifier or path to your model
-tokenizer = AutoTokenizer.from_pretrained("tao-8k")
-model = AutoModel.from_pretrained("tao-8k")
+#tokenizer = AutoTokenizer.from_pretrained(os.environ.get('MODEL_PATH'))
+model = SentenceTransformer(os.environ.get('MODEL_PATH'))
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -21,7 +23,9 @@ class EmbeddingRequest(BaseModel):
 class EmbeddingResponse(BaseModel):
     data: list  # List of embedding objects
     object: str = "list"  # This mimics OpenAI's 'object' field
-    model: str = "tao-8k"  # Adjusted to reflect the TAO-8K model
+    model: str = os.environ.get('MODEL_NAME')  # Adjusted to reflect the TAO-8K model
+
+
 
 @app.post("/v1/embeddings")
 async def get_embeddings(request: EmbeddingRequest):
@@ -29,14 +33,23 @@ async def get_embeddings(request: EmbeddingRequest):
         return {"error": "Unsupported model"}  # Ensure the requested model is 'tao-8k-model'
 
     # Generate embeddings for each input text
-    embeddings = []
-    for text in request.input:
-        # Tokenize the input text
-        inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
-        with torch.no_grad():
-            # Generate the embedding (this assumes your model has a last_hidden_state output)
-            embedding = model(**inputs).last_hidden_state.mean(dim=1).squeeze().cpu().numpy().tolist()
-        embeddings.append({"embedding": embedding, "index": len(embeddings)})
+    
+    embeddings = model.encode(request.input, normalize_embeddings=True)
+    # for text in request.input:
+    #     print(type(text))
+    #     # Tokenize the input text
+    #     embedding = model.encode(text, normalize_embeddings=True)
+    #     embeddings.append({"embedding": embedding.tolist(), "index": len(embeddings)})
+    ret = []
+    for i, embedding in enumerate(embeddings):
+        print(f'i: {i}')
+        obj = {
+            "object": "embedding",
+            "index": i,
+            "embedding": embedding.tolist()
+        }
+        ret.append(obj)
+    
 
     # Return the OpenAI-like response
-    return EmbeddingResponse(data=embeddings, model=request.model)
+    return EmbeddingResponse(data=ret, model=request.model)

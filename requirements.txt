@@ -1,4 +1,8 @@
 fastapi
 uvicorn
+numpy
 torch
 transformers
+python-dotenv
+langchain_openai
+sentence_transformers
