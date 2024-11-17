@@ -48,7 +48,7 @@ async def get_embeddings(request: EmbeddingRequest):
         embeddings = model.encode(request.input, normalize_embeddings=True)
         ret = []
         for i, embedding in enumerate(embeddings):
-            print(f'i: {i}')
+            # print(f'i: {i}')
             obj = {
                 "object": "embedding",
                 "index": i,
