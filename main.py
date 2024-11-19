@@ -58,6 +58,7 @@ async def get_embeddings(request: EmbeddingRequest):
                 "index": i,
                 "embedding": embeddings[0].tolist()
             }
+            print(obj.embedding)
             ret.append(obj)
 
         # Return the OpenAI-like response
