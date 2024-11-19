@@ -1,12 +1,15 @@
 import os
+from typing import List, Union
 from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 import pathlib
+import tiktoken
 
 _ = load_dotenv()
 
+tiktoken_encoding = tiktoken.get_encoding("cl100k_base")
 model_paths = {}
 model_base_path = os.getenv('MODEL_BASE_PATH')
 # Load the TAO-8K model and tokenizer (make sure the model is available on Hugging Face or local path)
@@ -32,7 +35,7 @@ app = FastAPI()
 # Define the request model for input text
 class EmbeddingRequest(BaseModel):
     model: str  # Model name (to match OpenAI API structure)
-    input: list  # List of input texts to be embedded
+    input: List[Union[str, List[int]]]  # Accept raw text or tokenized integers
 
 # Define the response model
 class EmbeddingResponse(BaseModel):
@@ -46,21 +49,20 @@ class EmbeddingResponse(BaseModel):
 async def get_embeddings(request: EmbeddingRequest):
     try:
         model = load_model(request.model)
-        ret = []
-        for i, text in enumerate(request.input):
-            print(text[:50])
-            # Generate embeddings for each input text
-            embeddings = model.encode([text], normalize_embeddings=True)
         
-            # print(f'i: {i}')
-            obj = {
+        texts = request.input
+        if isinstance(request.input, List[List[int]]):
+            """Tokenized """
+            texts = [tiktoken_encoding.decode(x) for x in request.input]
+        
+        embeddings = model.encode(texts, normalize_embeddings=True)
+        
+        ret = [ {
                 "object": "embedding",
-                "index": i,
-                "embedding": embeddings[0].tolist()
-            }
-            print(obj.embedding)
-            ret.append(obj)
-
+                "index": idx,
+                "embedding": emb
+            } for idx, emb in enumerate(embeddings)]
+            
         # Return the OpenAI-like response
         return EmbeddingResponse(data=ret, model=request.model)
     except Exception as e:
