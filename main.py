@@ -20,6 +20,9 @@ def load_model(model_name: str):
             raise FileNotFoundError(f"Model path {path} does not exist.")
         model = SentenceTransformer(path)
         model_paths[model_name] = model
+        
+        if model_name == 'gte_Qwen2-7B-instruct':
+            model.max_seq_length = 8192
     
     return model
 
