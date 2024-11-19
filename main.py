@@ -46,12 +46,11 @@ class EmbeddingResponse(BaseModel):
 async def get_embeddings(request: EmbeddingRequest):
     try:
         model = load_model(request.model)
-        i = 0
         ret = []
         for i, text in enumerate(request.input):
             print(text[:50])
             # Generate embeddings for each input text
-            embeddings = model.encode(text, normalize_embeddings=True)
+            embeddings = model.encode([text], normalize_embeddings=True)
         
             # print(f'i: {i}')
             obj = {
