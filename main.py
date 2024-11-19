@@ -56,14 +56,14 @@ async def get_embeddings(request: EmbeddingRequest):
         
         
         embeddings = model.encode(texts, normalize_embeddings=True)
-        print(embeddings[:10])
         ret = [ {
                 "object": "embedding",
                 "index": idx,
-                "embedding": emb
+                "embedding": emb.tolist()
             } for idx, emb in enumerate(embeddings)]
             
         # Return the OpenAI-like response
         return EmbeddingResponse(data=ret, model=request.model)
     except Exception as e:
+        print(f'error: {e}')
         return {"error": str(e)}
