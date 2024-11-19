@@ -51,13 +51,13 @@ async def get_embeddings(request: EmbeddingRequest):
         for i, text in enumerate(request.input):
             print(text[:50])
             # Generate embeddings for each input text
-            embedding = model.encode(text, normalize_embeddings=True)
+            embeddings = model.encode(text, normalize_embeddings=True)
         
             # print(f'i: {i}')
             obj = {
                 "object": "embedding",
                 "index": i,
-                "embedding": embedding.tolist()
+                "embedding": embeddings[0].tolist()
             }
             ret.append(obj)
 
