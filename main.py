@@ -47,6 +47,8 @@ async def get_embeddings(request: EmbeddingRequest):
     try:
         model = load_model(request.model)
 
+        for text in request.input:
+            print(text[:50])
         # Generate embeddings for each input text
         embeddings = model.encode(request.input, normalize_embeddings=True)
         ret = []
