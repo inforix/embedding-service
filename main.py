@@ -1,5 +1,4 @@
 import os
-from typing import List, Union
 from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -35,7 +34,7 @@ app = FastAPI()
 # Define the request model for input text
 class EmbeddingRequest(BaseModel):
     model: str  # Model name (to match OpenAI API structure)
-    input: List[Union[str, List[int]]]  # Accept raw text or tokenized integers
+    input: list  # Accept raw text or tokenized integers
 
 # Define the response model
 class EmbeddingResponse(BaseModel):
@@ -51,12 +50,13 @@ async def get_embeddings(request: EmbeddingRequest):
         model = load_model(request.model)
         
         texts = request.input
-        if isinstance(request.input, List[List[int]]):
+        if all(isinstance(item, list) and all(isinstance(token, int) for token in item) for item in request.input):
             """Tokenized """
             texts = [tiktoken_encoding.decode(x) for x in request.input]
         
-        embeddings = model.encode(texts, normalize_embeddings=True)
         
+        embeddings = model.encode(texts, normalize_embeddings=True)
+        print(embeddings[:10])
         ret = [ {
                 "object": "embedding",
                 "index": idx,
