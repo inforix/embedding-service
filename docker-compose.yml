@@ -1,0 +1,11 @@
+
+services:
+  embedding:
+    build: .
+    ports:
+      - "8082:8000"
+    volumes:
+      - ../models:/models/
+    environment:
+      - PYTHONUNBUFFERED=1 
+      - MODEL_BASE_PATH=/models/
