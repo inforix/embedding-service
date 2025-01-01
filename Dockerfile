@@ -7,14 +7,11 @@ WORKDIR /app
 # Install Python and pip
 RUN apt-get update && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
 
-# Copy the requirements file into the container
-COPY requirements.txt /app/
+# Copy the current directory contents into the container
+COPY . /app/
 
 # Install dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
-
-# Copy the current directory contents into the container
-COPY . /app/
 
 # Expose the port the app runs on
 EXPOSE 8000
