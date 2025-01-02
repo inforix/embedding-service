@@ -9,3 +9,5 @@ services:
     environment:
       - PYTHONUNBUFFERED=1 
       - MODEL_BASE_PATH=/models/
+    runtime: nvidia
+    
